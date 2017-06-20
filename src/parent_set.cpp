@@ -26,6 +26,11 @@ inline int zerocount2(uint64_t x)
     return 64 - __builtin_popcountll( ~x );
 }
 
+inline int pow(int i, int j)
+{
+	int k=1; while(j>0){k=k*i;j--;} return(k);
+}
+
 // [[Rcpp::export]]
 DataFrame parent(NumericMatrix df0, int h, int tw=0, int proc=0){
         int N=df0.ncol(), NN=N-1, n=df0.nrow(), L=pow(2,NN),i,j,k;

@@ -1,4 +1,4 @@
-38939e6991a7e17896319a2a97163dda *DESCRIPTION
+47c0cefed455ca3525ad33c20d52fea6 *DESCRIPTION
 be51210b10b17836526cdc150f4bceee *NAMESPACE
 717ad04045657bdd4d5283549584fe45 *R/RcppExports.R
 08b9574ef7aaaf1e79aec28f5beffa6c *R/aster.R
@@ -18,5 +18,5 @@ b6c898f1db6a199d44c8b43070374281 *man/parent.Rd
 a9aba7850dccdbc6cb043c0be14979c4 *src/init.cpp
 0a5634ae52bf49e1d23905f8801f426f *src/kruskal.cpp
 f18f08fcc7c19b2e1103448a57945c11 *src/mi_cmi.cpp
-02fde24d14ebef71231db61bd9d6278e *src/parent_set.cpp
+2e979cc3dbd698a39340c298345e6310 *src/parent_set.cpp
 0fdc39be0626e90a0ac8d401655235de *src/parent_set.h
