@@ -2,13 +2,16 @@
 \alias{bnsl}
 \title{Bayesian Network Structure Learning}
 \usage{
- bnsl(df, tw, proc=1)
+ bnsl(df, tw = 0, proc = 1, s=0, n=0, ss=1)
 }
 \arguments{
 \item{df}{a dataframe.}
 \item{tw}{the upper limit of the parent set.}
 \item{proc}{the criterion based on which the BNSL solution is sought.
 proc=1,2, and 3 indicates that the structure learning is based on Jeffreys [1], MDL [2,3], and BDeu [3]}
+\item{s}{The value computed when obtaining the bound.}
+\item{n}{The number of samples.}
+\item{ss}{The BDeu parameter.}
 }
 \description{The function outputs the Bayesian network structure given a dataset based on 
 an assumed criterion.  

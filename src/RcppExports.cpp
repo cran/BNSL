@@ -6,15 +6,18 @@
 using namespace Rcpp;
 
 // aster_cpp
-NumericVector aster_cpp(NumericMatrix matrix, int tree_width, int proc);
-RcppExport SEXP BNSL_aster_cpp(SEXP matrixSEXP, SEXP tree_widthSEXP, SEXP procSEXP) {
+NumericVector aster_cpp(NumericMatrix matrix, int tree_width, int proc, double s, int n, int ss);
+RcppExport SEXP BNSL_aster_cpp(SEXP matrixSEXP, SEXP tree_widthSEXP, SEXP procSEXP, SEXP sSEXP, SEXP nSEXP, SEXP ssSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type matrix(matrixSEXP);
     Rcpp::traits::input_parameter< int >::type tree_width(tree_widthSEXP);
     Rcpp::traits::input_parameter< int >::type proc(procSEXP);
-    rcpp_result_gen = Rcpp::wrap(aster_cpp(matrix, tree_width, proc));
+    Rcpp::traits::input_parameter< double >::type s(sSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type ss(ssSEXP);
+    rcpp_result_gen = Rcpp::wrap(aster_cpp(matrix, tree_width, proc, s, n, ss));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -272,28 +275,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // Bayes_score
-double Bayes_score(IntegerMatrix T, int m, int proc);
-RcppExport SEXP BNSL_Bayes_score(SEXP TSEXP, SEXP mSEXP, SEXP procSEXP) {
+double Bayes_score(IntegerMatrix T, int m, int proc, double s, int n, int ss);
+RcppExport SEXP BNSL_Bayes_score(SEXP TSEXP, SEXP mSEXP, SEXP procSEXP, SEXP sSEXP, SEXP nSEXP, SEXP ssSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerMatrix >::type T(TSEXP);
     Rcpp::traits::input_parameter< int >::type m(mSEXP);
     Rcpp::traits::input_parameter< int >::type proc(procSEXP);
-    rcpp_result_gen = Rcpp::wrap(Bayes_score(T, m, proc));
-    return rcpp_result_gen;
-END_RCPP
-}
-// bound
-double bound(IntegerMatrix T, int m, int proc);
-RcppExport SEXP BNSL_bound(SEXP TSEXP, SEXP mSEXP, SEXP procSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type T(TSEXP);
-    Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    Rcpp::traits::input_parameter< int >::type proc(procSEXP);
-    rcpp_result_gen = Rcpp::wrap(bound(T, m, proc));
+    Rcpp::traits::input_parameter< double >::type s(sSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type ss(ssSEXP);
+    rcpp_result_gen = Rcpp::wrap(Bayes_score(T, m, proc, s, n, ss));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -309,27 +302,45 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// BDeu_score
-double BDeu_score(IntegerMatrix T, int m);
-RcppExport SEXP BNSL_BDeu_score(SEXP TSEXP, SEXP mSEXP) {
+// MDL_score
+double MDL_score(IntegerMatrix T, int m, double s, int n);
+RcppExport SEXP BNSL_MDL_score(SEXP TSEXP, SEXP mSEXP, SEXP sSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerMatrix >::type T(TSEXP);
     Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(BDeu_score(T, m));
+    Rcpp::traits::input_parameter< double >::type s(sSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(MDL_score(T, m, s, n));
     return rcpp_result_gen;
 END_RCPP
 }
-// MDL_score
-double MDL_score(IntegerMatrix T, int m);
-RcppExport SEXP BNSL_MDL_score(SEXP TSEXP, SEXP mSEXP) {
+// BDeu_score
+double BDeu_score(IntegerMatrix T, int m, int ss);
+RcppExport SEXP BNSL_BDeu_score(SEXP TSEXP, SEXP mSEXP, SEXP ssSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerMatrix >::type T(TSEXP);
     Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(MDL_score(T, m));
+    Rcpp::traits::input_parameter< int >::type ss(ssSEXP);
+    rcpp_result_gen = Rcpp::wrap(BDeu_score(T, m, ss));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bound
+double bound(IntegerMatrix T, int m, int proc, int n, int ss);
+RcppExport SEXP BNSL_bound(SEXP TSEXP, SEXP mSEXP, SEXP procSEXP, SEXP nSEXP, SEXP ssSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type T(TSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< int >::type proc(procSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type ss(ssSEXP);
+    rcpp_result_gen = Rcpp::wrap(bound(T, m, proc, n, ss));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -345,15 +356,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// MDL_bound
-double MDL_bound(IntegerMatrix T, int m);
-RcppExport SEXP BNSL_MDL_bound(SEXP TSEXP, SEXP mSEXP) {
+// quotient_Jeffreys_bound
+double quotient_Jeffreys_bound(IntegerMatrix T, int m, int n, int ss);
+RcppExport SEXP BNSL_quotient_Jeffreys_bound(SEXP TSEXP, SEXP mSEXP, SEXP nSEXP, SEXP ssSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerMatrix >::type T(TSEXP);
     Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(MDL_bound(T, m));
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type ss(ssSEXP);
+    rcpp_result_gen = Rcpp::wrap(quotient_Jeffreys_bound(T, m, n, ss));
+    return rcpp_result_gen;
+END_RCPP
+}
+// MDL_bound
+double MDL_bound(IntegerMatrix T, int m, int n, int ss);
+RcppExport SEXP BNSL_MDL_bound(SEXP TSEXP, SEXP mSEXP, SEXP nSEXP, SEXP ssSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type T(TSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type ss(ssSEXP);
+    rcpp_result_gen = Rcpp::wrap(MDL_bound(T, m, n, ss));
     return rcpp_result_gen;
 END_RCPP
 }

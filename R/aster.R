@@ -10,9 +10,9 @@ makematrix = function(df) {
     return(m)
 }
 
-bnsl = function(df, tw = 0, proc=1) {
+bnsl = function(df, tw = 0, proc=1, s = 0, n = 0, ss = 1) {
     m = data.matrix(df)
-    v = aster_cpp(m, tw)
+    v = aster_cpp(m, tw, proc, s, n, ss)
     g = empty.graph(names(df))
 
     i = 1

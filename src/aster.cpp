@@ -19,8 +19,6 @@
 #include <cmath>
 #include <cfloat>
 
-#include "aster.h"
-
 #define unordered_map map
 
 #ifdef STAND_ALONE // pure C++ (currently not work)
@@ -31,73 +29,16 @@
 using namespace Rcpp;
 #endif
 
-// The code is copied from parent_set3.cpp
-namespace aster_s {
+double Bayes_score(IntegerMatrix T, int m, int proc=0, double s=0, int n=0, int ss=1);
+double bound(IntegerMatrix T, int m, int proc=0, int n=0, int ss=1);
 
-double gc(int n, double a){if(n>0)return(gc(n-1,a))+log(n+a-1); else return(0);}
+//typedef long long int int64_t;
+//typedef unsinged long long int uint64_t;
+typedef uint64_t vset;
+typedef double score_t;
 
-double gc_all(IntegerVector cc, double a){
- 	int m=cc.size();
- 	if(m==1)return(gc((int)cc(0),a)); else return(gc_all(tail(cc,m-1),a)+gc((int)cc(0),a));
-}
-
-double Jeffreys_score(IntegerMatrix T, int m){
-        double s=0;
-        int j, w=T.nrow();
-        for(j=0; j<w; j++)s=s-gc(sum(T(j,_)),m*0.5)+gc_all(T(j,_),0.5);
-        return (s);
-}
-
-double BDeu_score(IntegerMatrix T, int m){
-        double s=0;
-        int j, w=T.nrow();
-        for(j=0; j<w; j++)s=s-gc(sum(T(j,_)),1./w)+gc_all(T(j,_),1./m/w);
-        return (s);
-}
-
-double MDL_score(IntegerMatrix T, int m){
-        double s=0;
-        int j, w=T.nrow();
-		int n=0; for(j=0; j<w; j++)n=n+sum(T(j,_));
-		for(j=0; j<w; j++){double n_s=sum(T(j,_)); for(int k=0; k<m; k++)s=s+T(j,k)*log(T(j,k)/n_s); s=s-0.5*(m-1)*log(1.0*n);} 
-        return (s);
-}
-
-double Bayes_score(IntegerMatrix T, int m, int proc=1){
-	if(proc==1)return(Jeffreys_score(T,m));
-	else if(proc==2)return(MDL_score(T,m));
-	else if(proc==3)return(BDeu_score(T,m));
-	else return(Jeffreys_score(T,m));	
-}
-
-double Jeffreys_bound(IntegerMatrix T, int m){
- 	double s=0;
- 	int j, w=T.nrow();
- 	for(j=0; j<w; j++)s=s+gc(sum(T(j,_)),0.5)-gc(sum(T(j,_)),0.5*m);
- 	return (s);
-}
-
-double MDL_bound(IntegerMatrix T, int m){
-        int j, w=T.nrow();
-		int n=0; for(j=0; j<w; j++)n=n+sum(T(j,_));
-		double s=-0.5*(m-1)*w*log(1.0*n);
-        return (s);
-}
-
-double BDeu_bound(IntegerMatrix T, int m){
-        int w=T.nrow();
-		double s=pow(m,w);
-        return (s);
-}
-
-double bound(IntegerMatrix T, int m, int proc=1){
-	if(proc==1)return(Jeffreys_bound(T,m));
-	else if(proc==2)return(MDL_bound(T,m));
-	else if(proc==3)return(BDeu_bound(T,m));
-	else return(Jeffreys_bound(T,m));	
-}
-
-} // end of namespace aster_s
+const uint64_t ONE_LLU = 1;
+//const score_t INF = 99999999.0;
 
 
 class OrderNode {
@@ -110,7 +51,7 @@ private:
 public:
     // for the initial node
     OrderNode(score_t estimated_score) :
-        vs_(0llu), score_(0.0), estimated_score_(estimated_score), parent_pos_(-1) { }
+        vs_(0), score_(0.0), estimated_score_(estimated_score), parent_pos_(-1) { }
 
     OrderNode(vset vs, score_t score, score_t estimated_score, int parent_pos) :
         vs_(vs), score_(score), estimated_score_(estimated_score), parent_pos_(parent_pos) { }
@@ -152,14 +93,14 @@ public:
 
     bool isGoal(int n)
     {
-        return vs_ == ((1llu << n) - 1);
+        return vs_ == ((ONE_LLU << n) - 1);
     }
 
     std::string toString(int n)
     {
         std::ostringstream oss;
         for (int i = 0; i < n; ++i) {
-            oss << (((vs_ >> i) & 1llu) != 0 ? '1' : '0');
+            oss << (((vs_ >> i) & ONE_LLU) != 0 ? '1' : '0');
         }
         oss << ", " << score_ << ", " << estimated_score_ << ", " << parent_pos_;
         return oss.str();
@@ -179,17 +120,20 @@ bool operator> (const OrderNode& node1, const OrderNode& node2)
 
 class ParentSet {
 private:
-    //std::vector<IntegerVector> y_array_;
-    //std::vector<NumericVector> z_array_;
-    //std::vector<IntegerMatrix> xxx;
     std::vector<std::unordered_map<vset, vset> > y_maps_;
     std::vector<std::unordered_map<vset, score_t> > z_maps_;
     
     const int sign_;
+    const double s_;
+    const int n_;
+    const int ss_;
 
 public:
     // If is_flip is true, the sign of scores is flipped.
-    ParentSet(bool is_flip) : sign_(is_flip ? -1 : 1) { }
+    ParentSet(bool is_flip, double s=0, int n=0, int ss=0) : sign_(is_flip ? -1 : 1),
+                                                             s_(s),
+                                                             n_(n),
+                                                             ss_(ss) { }
 
     void computeParentSet(NumericMatrix matrix, int tree_width = 0, int proc = 0)
     {
@@ -242,7 +186,6 @@ public:
                 vset vsy = BitvecToVset(ys, j, n, i);
                 y_maps_[i][vsw] = vsy;
                 z_maps_[i][vsw] = sign_ * static_cast<score_t>(z[j]);
-                //cerr << i << ": " << vsw << ", " << vsy << ", " << z[j] << "\n";
             }
         }
     }
@@ -273,9 +216,6 @@ public:
         } catch (...) {
             stop("not found %d at z_maps[%d]", u_vset, x);
         }
-        //vset mask = (1llu << x) - 1;
-        //vset p = (((u_vset & ~mask) >> 1) | (u_vset & mask));
-        //return sign_ * static_cast<score_t>(z_array_[x][p]);
     }
 
     vset getBestParent(int x, vset u_vset) const
@@ -286,9 +226,6 @@ public:
         } catch (...) {
             stop("not found %d at y_maps[%d]", u_vset, x);
         }
-        //vset mask = (1llu << x) - 1;
-        //vset p = (((u_vset & ~mask) >> 1) | (u_vset & mask));
-        //return static_cast<vset>(y_array_[x][p]);
     }
 
 private:
@@ -301,7 +238,7 @@ private:
                 ++s;
             }
             if (vec[i][j] != 0) {
-                vs |= (1llu << s);
+                vs |= (ONE_LLU << s);
             }
             ++s;
         }
@@ -324,21 +261,21 @@ private:
         uint64_t& v = *perm;
         int p;
         for (p = 0; p < n; ++p) {
-            if ((v & (1llu << (n - p - 1))) == 0) {
+            if ((v & (ONE_LLU << (n - p - 1))) == 0) {
                 break;
             }
         }
         int q = p;
         for ( ; p < n; ++p) {
-            if ((v & (1llu << (n - p - 1))) != 0) {
+            if ((v & (ONE_LLU << (n - p - 1))) != 0) {
                 break;
             }
         }
         if (p == n) { // perm is 1...10...0
             return false;
         }
-        v &= ~(((1llu << (p + 1)) - 1) << (n - p - 1));
-        v |= (((1llu << (q + 1)) - 1) << (n - p));
+        v &= ~(((ONE_LLU << (p + 1)) - 1) << (n - p - 1));
+        v |= (((ONE_LLU << (q + 1)) - 1) << (n - p));
         return true;
     }
 
@@ -388,17 +325,17 @@ private:
 
         std::map<uint64_t, bool> x;
 
-        uint64_t mask = (1llu << h) - 1;
+        uint64_t mask = (ONE_LLU << h) - 1;
 
         for (int i = 0; i <= tw; ++i) {
-            uint64_t perm = (1llu << i) - 1;
+            uint64_t perm = (ONE_LLU << i) - 1;
             do {
                 uint64_t ex_perm = (perm & mask) | ((perm & ~mask) << 1);
                 x[ex_perm] = false;
                 z[ex_perm] = -100000000.0;
                 for (int j = 0; j < col; ++j) {
-                    if ((ex_perm & (1llu << j)) != 0) {
-                        uint64_t child = (ex_perm & ~(1llu << j));
+                    if ((ex_perm & (ONE_LLU << j)) != 0) {
+                        uint64_t child = (ex_perm & ~(ONE_LLU << j));
                         if (x[child]) {
                             x[ex_perm] = true;
                         }
@@ -411,17 +348,10 @@ private:
                 if (!x[ex_perm]) {
                     int m = kind_vec[h];
                     IntegerMatrix T = fftable_ex(matrix, m, h, ex_perm, bit_pos_vec);
-                    //for (int k = 0; k < T.nrow(); ++k) {
-                    //    for (int ii = 0; ii < T.ncol(); ++ii) {
-                    //        Rcerr << T(k, ii) << ", ";
-                    //    }
-                    //    Rcerr << "\n";
-                    //}
-                    //Rcerr << ".\n";
-                    if (z[ex_perm] > aster_s::bound(T, m, proc)) {
+                    if (z[ex_perm] > bound(T, m, proc, n_, ss_)) {
                         x[ex_perm] = true;
                     } else {
-                        double s = aster_s::Bayes_score(T, m, proc);
+                        double s = Bayes_score(T, m, proc, s_, n_, ss_);
                         if (s > z[ex_perm]) {
                             y[ex_perm] = ex_perm;
                             z[ex_perm] = s;
@@ -430,11 +360,6 @@ private:
                 }
             } while (next_permutation(&perm, col - 1));
         }
-        //std::map<uint64_t, double>::iterator itor1 = z.begin();
-        //while (itor1 != z.end()) {
-        //    Rcerr << itor1->first << ", " << itor1->second << "\n";
-        //    ++itor1;
-        //}
         return DataFrame();
     }
 
@@ -449,7 +374,7 @@ private:
         for (int i = 0; i < nrow; ++i) {
             uint64_t b = 0;
             for (int j = 0; j < ncol; ++j) {
-                if ((children & (1llu << j)) != 0) {
+                if ((children & (ONE_LLU << j)) != 0) {
                     b |= (static_cast<uint64_t>(matrix(i, j)) << bit_pos_vec[j]);
                 }
             }
@@ -489,9 +414,7 @@ public:
         tree_width_((tree_width != 0) ? tree_width : n),
         cache_map_(n),
         parent_set_(parent_set)
-    {
-        //cerr << "tree width = " << tree_width_ << "\n";
-    }
+    { }
 
     void addNode(OrderNode* node)
     {
@@ -554,15 +477,14 @@ public:
 
     score_t getBestScore(int x, vset u_vset)
     {
-        if (CountBit(u_vset) <= tree_width_) {
+        if (__builtin_popcountll(u_vset) <= tree_width_) {
             score_t v = parent_set_.getBestScore(x, u_vset);
-            //cerr << "getBestScore " << x << ", " << u_vset << ", " << v << "\n";
             return v;
         } else {
             score_t cand_score = -99999999.9;
             for (int y = 0; y < n_; ++x) {
-                if (((u_vset >> y) & 1llu) != 0) {
-                    vset u_minus_y_vset = u_vset & ~(1llu << y);
+                if (((u_vset >> y) & ONE_LLU) != 0) {
+                    vset u_minus_y_vset = u_vset & ~(ONE_LLU << y);
                     score_t v;
                     std::unordered_map<vset, score_t>::iterator itor =
                         cache_map_[x].find(u_minus_y_vset);
@@ -694,15 +616,15 @@ private:
 std::vector<int> extractResult(int n, const ASterQueue& queue, const ParentSet& parent_set)
 {
     std::vector<int> result;
-    vset node = (1llu << n) - 1;
+    vset node = (ONE_LLU << n) - 1;
     while (node > 0) {
         int x = queue.getNode(node)->getParentPos();
-        vset u = (1llu << x);
+        vset u = (ONE_LLU << x);
         node &= ~u;
         vset c = parent_set.getBestParent(x, node);
         for (int i = 0; c != 0; ++i) {
             //if (i != x) { // skip if i == x
-                if ((c & 1llu) != 0) { // make arc "i -> x"
+                if ((c & ONE_LLU) != 0) { // make arc "i -> x"
                     result.push_back(i);
                     result.push_back(x);
                 }
@@ -739,8 +661,8 @@ std::vector<int> runAster(NumericMatrix& matrix, const ParentSet& parent_set, in
         }
         vset u_vset = u->getVset();
         for (int x = 0; x < n; ++x) {
-            if (((u_vset >> x) & 1llu) == 0) { // for each i in V minus U
-                vset x_vset = (1llu << x);
+            if (((u_vset >> x) & ONE_LLU) == 0) { // for each i in V minus U
+                vset x_vset = (ONE_LLU << x);
                 vset ux = (u_vset | x_vset);
                 score_t g_new = queue.getBestScore(x, u_vset) + u->getScore();
                 queue.addOrUpdateNode(ux, g_new, g_new + heuristics(ux), x);
@@ -752,7 +674,7 @@ std::vector<int> runAster(NumericMatrix& matrix, const ParentSet& parent_set, in
 
 
 // [[Rcpp::export]]
-NumericVector aster_cpp(NumericMatrix matrix, int tree_width = 0, int proc=1)
+NumericVector aster_cpp(NumericMatrix matrix, int tree_width = 0, int proc=1, double s=0, int n=0, int ss=0)
 {
     if (matrix.ncol() >= 64) {
         stop("The data with more than 64 variables is not supported.");
@@ -760,7 +682,7 @@ NumericVector aster_cpp(NumericMatrix matrix, int tree_width = 0, int proc=1)
 
     // give true to the argument because of flipping the sign
     // for solving the maximization problem.
-    ParentSet parent_set(true);
+    ParentSet parent_set(true, s, n, ss);
     //parent_set.computeParentSet(matrix, tree_width, proc);
     parent_set.computeParentSetEx(matrix, tree_width, proc);
 
