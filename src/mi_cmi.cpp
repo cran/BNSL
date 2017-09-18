@@ -15,6 +15,7 @@ double Jeffreys_cmi(NumericVector, NumericVector, NumericVector, int, int, int);
 double BDeu_cmi(NumericVector, NumericVector, NumericVector, int, int, int, double);
 NumericMatrix mi_matrix(DataFrame, int);
 double cont_mi(NumericVector, NumericVector);
+double cont_cmi(NumericVector, NumericVector, NumericVector);
 NumericVector intervals(int, NumericVector);
 int binary_search(NumericVector, double);
 
@@ -44,8 +45,7 @@ double MDL_mi(NumericVector x, NumericVector y, int m_x=0, int m_y=0)
 {
 	if(m_x==0)m_x=table(x).size(); if(m_y==0)m_y=table(y).size();
 	int n=x.size();
-	double S=empirical_mi(x,y)-0.5*(m_x-1)*(m_y-1)*log(n)/n;
-//Rprintf("m_x = %d m_y = %d \n",m_x,m_y);
+	double S=empirical_mi(x,y)-0.5*(m_x-1)*(m_y-1)*log(1.0*n)/n;
 	if (S<=0) return(0); else return (S);
 }
 
@@ -83,6 +83,7 @@ double cmi(NumericVector x, NumericVector y, NumericVector z, int proc=0){
 	if(proc==1)return(MDL_cmi(x,y,z,0,0,0));
 	else if(proc==2)return(BDeu_cmi(x,y,z,0,0,0,1));
 	else if(proc==3)return(empirical_cmi(x,y,z));
+	else if(proc==10)return(cont_cmi(x,y,z));
 	else return(Jeffreys_cmi(x,y,z,0,0,0));
 }
 
@@ -91,7 +92,7 @@ double MDL_cmi(NumericVector x, NumericVector y, NumericVector z, int m_x=0, int
 {
 	if(m_x==0)m_x=table(x).size(); if(m_y==0)m_y=table(y).size(); if(m_z==0)m_z=table(z).size();
 	int n=x.size();
-	double S=empirical_cmi(x,y,z)-0.5*(m_x-1)*(m_y-1)*m_z*log(n)/n;
+	double S=empirical_cmi(x,y,z)-0.5*(m_x-1)*(m_y-1)*m_z*log((double)n)/n;
 	if (S<=0) return(0); else return (S);
 }
 
@@ -128,14 +129,14 @@ NumericMatrix mi_matrix(DataFrame df, int proc=0){
 
 // [[Rcpp::export]]
 double cont_mi(NumericVector x, NumericVector y){
-	int n=x.size(),size=ceil(log(n)/log(2))+1,i,j,k;
-	NumericVector z(n);
+	int n=x.size(),size=ceil(log((double)n)/log(2.0))+1,i,j,k;
+	NumericVector w(n), xx=sort_unique(x), yy=sort_unique(y);
 	NumericMatrix p(n,size),q(n,size);
 	for(j=0; j<size; j++){
-		z=intervals(j,sort_unique(x));
-		for(i=0; i<n; i++)p(i,j)=binary_search(z,x(i));
-		z=intervals(j,sort_unique(y));
-		for(i=0; i<n; i++)q(i,j)=binary_search(z,y(i));
+		w=intervals(j,xx);
+		for(i=0; i<n; i++)p(i,j)=binary_search(w,x(i));
+		w=intervals(j,yy);
+		for(i=0; i<n; i++)q(i,j)=binary_search(w,y(i));
 	}
 	double mi_value=-100;
 	for(j=0;j<size;j++)for(k=0;k<size-j;k++){
@@ -143,6 +144,27 @@ double cont_mi(NumericVector x, NumericVector y){
 		if(S>mi_value)mi_value=S;
 	}
 	return(mi_value);
+}
+
+// [[Rcpp::export]]
+double cont_cmi(NumericVector x, NumericVector y, NumericVector z){
+	int n=x.size(),size=ceil(log((double)n)/log(2.0))+1,i,j,k;
+	NumericVector w(n), xx=sort_unique(x), yy=sort_unique(y), zz=sort_unique(z);
+	NumericMatrix p(n,size),q(n,size), r(n,size);
+	for(j=0; j<size; j++){
+		w=intervals(j,xx);
+		for(i=0; i<n; i++)p(i,j)=binary_search(w,x(i));
+		w=intervals(j,yy);
+		for(i=0; i<n; i++)q(i,j)=binary_search(w,y(i));
+		w=intervals(j,zz);
+		for(i=0; i<n; i++)r(i,j)=binary_search(w,z(i));
+	}
+	double cmi_value=-100;
+	for(j=0;j<size;j++)for(k=0;k<size-j;k++)for(i=0;i<size-j-k;i++){
+		double S=cmi(p(_,j),q(_,k),r(_,i),1);
+		if(S>cmi_value)cmi_value=S;
+	}
+	return(cmi_value);
 }
 		
 // [[Rcpp::export]]
