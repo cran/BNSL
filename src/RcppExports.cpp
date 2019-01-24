@@ -21,6 +21,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// aster_cpp
+NumericVector aster_cpp_p(NumericMatrix matrix, List psl, int tree_width, int proc, double s, int n, int ss);
+RcppExport SEXP BNSL_aster_cpp_p(SEXP matrixSEXP, SEXP pslSEXP, SEXP tree_widthSEXP, SEXP procSEXP, SEXP sSEXP, SEXP nSEXP, SEXP ssSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type matrix(matrixSEXP);
+    Rcpp::traits::input_parameter< List >::type psl(pslSEXP);
+    Rcpp::traits::input_parameter< int >::type tree_width(tree_widthSEXP);
+    Rcpp::traits::input_parameter< int >::type proc(procSEXP);
+    Rcpp::traits::input_parameter< double >::type s(sSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type ss(ssSEXP);
+    rcpp_result_gen = Rcpp::wrap(aster_cpp_p(matrix, psl, tree_width, proc, s, n, ss));
+    return rcpp_result_gen;
+END_RCPP
+}
 // gc
 double gc(int n, double a);
 RcppExport SEXP BNSL_gc(SEXP nSEXP, SEXP aSEXP) {

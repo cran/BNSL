@@ -1,5 +1,6 @@
 useDynLib(BNSL, .registration = TRUE)
 export(bnsl)
+export(bnsl_p)
 export(mi)
 export(cmi)
 export(mi_matrix)

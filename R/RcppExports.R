@@ -5,6 +5,10 @@ aster_cpp <- function(matrix, tree_width = 0L, proc = 1L, s = 0, n = 0L, ss = 0L
     .Call('BNSL_aster_cpp', PACKAGE = 'BNSL', matrix, tree_width, proc, s, n, ss)
 }
 
+aster_cpp_p <- function(matrix, psl, tree_width = 0L, proc = 1L, s = 0, n = 0L, ss = 0L) {
+    .Call('BNSL_aster_cpp_p', PACKAGE = 'BNSL', matrix, psl, tree_width, proc, s, n, ss)
+}
+
 gc <- function(n, a) {
     .Call('BNSL_gc', PACKAGE = 'BNSL', n, a)
 }

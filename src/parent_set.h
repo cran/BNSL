@@ -3,15 +3,10 @@
 
 #include <Rcpp.h>
 
+Rcpp::DataFrame parent_i(Rcpp::IntegerMatrix matrix, int h, int tw, int proc,
+                         /*double s=0,*/ int n, int ss,
+                         Rcpp::IntegerVector kind_vec,
+                         Rcpp::IntegerVector bit_pos_vec);
 Rcpp::DataFrame parent(Rcpp::NumericMatrix, int, int, int);
-Rcpp::IntegerMatrix fftable(Rcpp::NumericMatrix, int);
-double Bayes_score(Rcpp::IntegerMatrix, int, int);
-double Jeffreys_score(Rcpp::IntegerMatrix, int);
-double MDL_score(Rcpp::IntegerMatrix, int);
-double BDeu_score(Rcpp::IntegerMatrix, int);
-double bound(Rcpp::IntegerMatrix, int, int);
-double Jeffreys_bound(Rcpp::IntegerMatrix, int);
-double MDL_bound(Rcpp::IntegerMatrix, int);
-double BDeu_bound(Rcpp::IntegerMatrix, int);
 
 #endif // PARENT_SET_H

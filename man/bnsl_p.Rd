@@ -1,11 +1,12 @@
-\name{bnsl}
-\alias{bnsl}
+\name{bnsl_p}
+\alias{bnsl_p}
 \title{Bayesian Network Structure Learning}
 \usage{
- bnsl(df, tw = 0, proc = 1, s=0, n=0, ss=1)
+ bnsl_p(df, psl, tw = 0, proc = 1, s=0, n=0, ss=1)
 }
 \arguments{
 \item{df}{a dataframe.}
+\item{psl}{the list of parent sets.}
 \item{tw}{the upper limit of the parent set.}
 \item{proc}{the criterion based on which the BNSL solution is sought.
 proc=1,2, and 3 indicates that the structure learning is based on Jeffreys [1], MDL [2,3], and BDeu [3]}
@@ -29,12 +30,13 @@ Uncertainty in Artificial Intelligence, pages 266-273, Washington D.C. July, 199
 [3] Suzuki, J. ``Learning Bayesian Belief Networks Based on the Minimum Description Length Principle: An Efficient Algorithm Using the B & B Technique",
 International Conference on Machine Learning, Bali, Italy, July 1996"
 [4] Suzuki, J. ``A Theoretical Analysis of the BDeu Scores in Bayesian Network Structure Learning", Behaviormetrika 1(1):1-20,
-[5] Suzuki, J.  and Kawahara, J., ``Branch and Bound for Regular Bayesian Network Structure learning", Uncertainty in Artificial Intelligence, pages 212-221,  Sydney, Australia, August 2017.
-[6] Suzuki, J. ``Forest Learning from Data and its Universal Coding", IEEE Transactions on Information Theory, Dec. 2018.
 January 2017.
 }
 \seealso{parent}
 \examples{
 library(bnlearn)
-bnsl(asia)
+p0 <- parent.set(lizards, 0)
+p1 <- parent.set(lizards, 1)
+p2 <- parent.set(lizards, 2)
+bnsl_p(lizards, list(p0, p1, p2))
 }

@@ -26,6 +26,8 @@ Maintainer: Joe Suzuki <j-suzuki@sigmath.es.osaka-u.ac.jp>
 [5]   Suzuki, J., ``Consistency of learning Bayesian network structures with continuous variables: An information theoretic approach". Entropy, Vol.17, No.8, 5752-5770, 2015.
 [6]   Suzuki. J.,  ``Learning Bayesian network structures when discrete and continuous variables are present. In Lecture Note on Artificial Intelligence, the sixth European workshop on Probabilistic Graphical Models, Vol. 8754, pp. 471-486,Utrecht, Netherlands, Sept. 2014. Springer-Verlag.
 [7]   Suzuki. J.,  ``The Bayesian Chow-Liu algorithms", In the sixth European workshop on Probabilistic Graphical Models, pp. 315-322, Granada, Spain, Sept.2012.
-[8]   Suzuki, J.,  ``Branch and Bound for Regular Bayesian Network Structure Learning", Uncertainty in Artificial Intelligence, pp 212-221, Sydney, Australia, August, 2017.
+[8] Suzuki, J.  and Kawahara, J., ``Branch and Bound for Regular Bayesian Network Structure learning", Uncertainty in Artificial Intelligence, pages 212-221,  Sydney, Australia, August 2017.
+[9] Suzuki, J. ``Forest Learning from Data and its Universal Coding", IEEE Transactions on Information Theory, Dec. 2018.
+January 2017.
 }
 \keyword{ package }
